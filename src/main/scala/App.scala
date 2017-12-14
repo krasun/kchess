@@ -25,18 +25,26 @@ object App {
 
         // @todo how to ask for draw, how to resign in this architecture of game loop?
         // @todo how to ask for pawn promotion
+
         GameView.askToMove(player, color) match {
-          case Some(moveAsText) =>
-
-            game.applyMove(moveAsText) match {
-              case Success(updatedGame) => loop(updatedGame)
+          // move has been parsed successfully
+          case Success((from, to)) =>
+            game.applyMove(from ,to) match {
+              case Success(updatedGame) => {
+                loop(updatedGame)
+              }
               case Failure(exception) =>
-
                 GameView.renderFailureMessage(exception.getMessage)
                 loop(game)
             }
 
-          case None => GameView.renderAbortedGame()
+          case Failure(exception) => exception match {
+            case QuitGameException(message) =>
+              GameView.renderAbortedGame(message)
+            case _ =>
+              GameView.renderFailureMessage(exception.getMessage)
+              loop(game)
+          }
         }
 
       case GameOver() => GameView.renderFinishedGame(game)

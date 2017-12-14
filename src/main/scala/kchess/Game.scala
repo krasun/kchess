@@ -2,43 +2,37 @@ package kchess
 
 import scala.util.{Try, Success, Failure}
 
-case class Game(board: Board, whitePlayer: Player, blackPlayer: Player) {
+case class Game(board: Board, whitePlayer: Player, blackPlayer: Player, history: History) {
 
   val colorOf = Map(
     whitePlayer -> Color.White,
     blackPlayer -> Color.Black
   )
 
-  def playerOf = colorOf.map(_.swap)
+  val playerOf = colorOf.map(_.swap)
 
-  def state: GameState = ExpectsMove(currentPlayer, colorOf(currentPlayer))
+  val currentPlayer: Player = playerOf(history.nextColor)
 
-  def currentPlayer: Player = playerOf(board.currentColor)
+  val state: GameState = ExpectsMove(currentPlayer, colorOf(currentPlayer))
 
   def isOver: Boolean = state match {
     case GameOver() => true
     case _ => false
   }
 
-  def applyMove(move: String): Try[Game] = parseMove(move) match {
-    case Success((from, to)) =>
-      board.applyMove(from, to) match {
-        case Success(updatedBoard) => Success(Game(updatedBoard, whitePlayer, blackPlayer))
+  def applyMove(from: Position, to: Position): Try[Game] = Rules.checkMove(board, from, to, history) match {
+    case Success(CheckResult(movedPiece, capturesAt)) =>
+
+      val dropAt = capturesAt.getOrElse(to)
+      board.drop(dropAt).move(from, to) match {
+        case Success(updatedBoard) => Success(Game(updatedBoard, whitePlayer, blackPlayer, history :+ Move(movedPiece, from, to)))
         case Failure(exception) => Failure(exception)
       }
+
     case Failure(exception) => Failure(exception)
-  }
-
-  private val MovePattern = """([a-h])([1-8]) ([a-h])([1-8])""".r
-
-  private def parseMove(move: String): Try[(Position, Position)] = move.toLowerCase match {
-      case MovePattern(fromFile, fromRank, toFile, toRank) =>
-        Success((Position(fromFile.head, fromRank.head), Position(toFile.head, toRank.head)))
-      case _ =>
-        Failure(new Exception(s"Invalid format of move! Expected move format is '$MovePattern', e.g. 'e2 e4'."))
   }
 }
 
 object Game {
-  def standard(whitePlayer: Player, blackPlayer: Player): Game = Game(Board.standard, whitePlayer, blackPlayer)
+  def standard(whitePlayer: Player, blackPlayer: Player): Game = Game(Board.standard, whitePlayer, blackPlayer, History())
 }

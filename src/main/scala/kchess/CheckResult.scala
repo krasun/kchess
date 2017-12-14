@@ -1,3 +1,3 @@
 package kchess
 
-case class CheckResult(capturesAt: Option[Position])
+case class CheckResult(movedPiece: Piece, capturesAt: Option[Position])

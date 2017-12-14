@@ -2,13 +2,7 @@ package kchess
 
 import scala.util.{Try, Failure, Success}
 
-case class Board(pieces: Map[Position, Piece], history: History) {
-
-  val currentColor: Color.Value =
-    history
-      .lastOption
-      .map(m => m.piece.color.opposite)
-      .getOrElse(Color.White)
+case class Board(pieces: Map[Position, Piece]) {
 
   def ofColor(color: Color.Value): Map[Position, Piece] = for ((position, piece) <- pieces if piece.color == color) yield position -> piece
 
@@ -17,27 +11,14 @@ case class Board(pieces: Map[Position, Piece], history: History) {
 
   def at(position: Position): Option[Piece] = pieces.get(position)
 
-  def applyMove(from: Position, to: Position): Try[Board] = pieces.get(from) match {
-    case Some(selectedPiece) =>
-      if (selectedPiece.color != currentColor) {
-        val expectsColor = currentColor.toString.toLowerCase
-        Failure(new Exception(s"Expects move of $expectsColor piece!"))
-      } else {
-        Rules.checkMove(this, selectedPiece, from, to) match {
-          case Success(CheckResult(capturesAt)) =>
+  def drop(dropAt: Position): Board = Board(pieces - dropAt)
 
-            val dropAt = capturesAt.getOrElse(to)
-            val updatedPieces = ((pieces - from) - dropAt) + (to -> selectedPiece)
-
-            Success(Board(updatedPieces, history :+ Move(selectedPiece, from, to)))
-
-          case Failure(exception) => Failure(exception)
-        }
-      }
+  def move(from: Position, to: Position): Try[Board] = at(from) match {
+    case Some(piece) =>
+      Success(Board((pieces - from) + (to -> piece)))
     case None =>
       val fromAsString = from.toString
       Failure(new Exception(s"There is no piece at $fromAsString."))
-
   }
 }
 
@@ -79,7 +60,6 @@ object Board {
       Position.F8 -> Knight(Color.Black),
       Position.G8 -> Bishop(Color.Black),
       Position.H8 -> Rook(Color.Black)
-    ),
-    History()
+    )
   )
 }
