@@ -4,11 +4,16 @@ import scala.util.{Try, Failure, Success}
 
 case class Board(pieces: Map[Position, Piece], history: History) {
 
-  def currentColor: Color.Value =
+  val currentColor: Color.Value =
     history
       .lastOption
       .map(m => m.piece.color.opposite)
       .getOrElse(Color.White)
+
+  def ofColor(color: Color.Value): Map[Position, Piece] = for ((position, piece) <- pieces if piece.color == color) yield position -> piece
+
+  def kingPosition(color: Color.Value): Position =
+    (for ((position, piece) <- pieces if piece.color == color && piece.isInstanceOf[King]) yield position).head
 
   def at(position: Position): Option[Piece] = pieces.get(position)
 

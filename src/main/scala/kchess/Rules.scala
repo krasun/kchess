@@ -24,15 +24,27 @@ object Rules {
 
   private val kingDirections = queenDirections
 
+  def isKingAtCheck(board: Board, color: Color.Value): Boolean = {
+    val kingPosition = board.kingPosition(color)
+
+    // find at least one which can attack king
+    board.ofColor(color.opposite).exists {
+      case (enemyPosition, enemyPiece) => !enemyPiece.isInstanceOf[King] && attacksKing(board, enemyPiece, enemyPosition, kingPosition)
+    }
+  }
+
   def checkMove(board: Board, selectedPiece: Piece, from: Position, to: Position): Try[CheckResult] = {
 
-    // @todo 1. can not open king for check
-    // @todo 2. and can check king
-    // @todo 3. can not eat king
-
     val kingUnsafeMoves = kingUnsafePossibleMoves(board, selectedPiece, from)
+
     kingUnsafeMoves.find(_.to == to) match {
-      case Some(possibleMove) => Success(CheckResult(possibleMove.capturesAt))
+      case Some(possibleMove) =>
+
+        // @todo 1. can not open king for check
+        // @todo 2. and can not move if king is under check
+
+        Success(CheckResult(possibleMove.capturesAt))
+
       case None =>
         val message =
           if (kingUnsafeMoves.isEmpty) "Invalid move!"
@@ -44,16 +56,26 @@ object Rules {
     }
   }
 
-
-  private def kingUnsafePossibleMoves(board: Board, selectedPiece: Piece, from: Position): List[PossibleMove] = {
+  private def attacksKing(board: Board, selectedPiece: Piece, from: Position, kingPosition: Position): Boolean = {
     selectedPiece match {
+      case Pawn(_) => false
+      case Knight(_) => false
+      case Bishop(_) => false
+      case Rook(_) => false
+      case Queen(_) => false
+    }
+  }
+
+  // king unsafe moves means that any king after move can be under check or under checkmate
+  private def kingUnsafePossibleMoves(board: Board, selectedPiece: Piece, from: Position): List[PossibleMove] = {
+    (selectedPiece match {
       case Pawn(_) => kingUnsafePossibleMovesByPawn(board, selectedPiece, from)
       case Knight(_) => kingUnsafePossibleMovesByKnight(board, selectedPiece, from)
       case Bishop(_) => kingUnsafePossibleMovesByBishop(board, selectedPiece, from)
       case Rook(_) => kingUnsafePossibleMovesByRook(board, selectedPiece, from)
       case Queen(_) => kingUnsafePossibleMovesByQueen(board, selectedPiece, from)
       case King(_) => kingUnsafePossibleMovesByKing(board, selectedPiece, from)
-    }
+    }).filter(m => m.capturesPiece.isEmpty || (m.capturesPiece.isDefined && !m.capturesPiece.get.isInstanceOf[King]))
   }
 
   private def kingUnsafePossibleMovesByPawn(board: Board, selectedPiece: Piece, from: Position): List[PossibleMove] = {
@@ -113,7 +135,11 @@ object Rules {
     generateMovesByDirections(board, selectedPiece, from, queenDirections)
 
   private def kingUnsafePossibleMovesByKing(board: Board, selectedPiece: Piece, from: Position): List[PossibleMove] = {
-    ???
+    val moves = for (kingDirection <- kingDirections; to <- from + kingDirection) yield to
+
+    moves
+      .filter(to => board.at(to).isEmpty || board.at(to).get.color != selectedPiece.color)
+      .map(to => PossibleMove(from, to, selectedPiece, board.at(to), None))
   }
 
   private def generateMovesByDirections(board: Board, selectedPiece: Piece, from: Position, directions: List[(Int, Int)]): List[PossibleMove] =
