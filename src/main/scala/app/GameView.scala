@@ -1,3 +1,5 @@
+package app
+
 import kchess._
 
 import scala.io.StdIn
