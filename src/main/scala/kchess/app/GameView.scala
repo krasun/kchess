@@ -33,7 +33,7 @@ object GameView {
 
   val QuitCommand = "quit"
 
-  def renderFailureMessage(message: String): Unit = println(s"\033[31m$message")
+  def renderFailureMessage(message: String): Unit = println(s"\u001b[31m$message")
 
   def renderAbortedGame(message: String): Unit = renderFailureMessage(message)
 
@@ -90,9 +90,9 @@ object GameView {
         val pieceChar = board.at(Position(r, colum)).map(pieceToChar).getOrElse(' ')
         val isWhite = (row + colum) % 2 == 0
         if (isWhite) {
-          print("\033[49m " + pieceChar + " \033[0m")
+          print("\u001b[49m " + pieceChar + " \u001b[0m")
         } else {
-          print("\033[43m " + pieceChar + " \033[0m")
+          print("\u001b[43m " + pieceChar + " \u001b[0m")
         }
       }
       println()

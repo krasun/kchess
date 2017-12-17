@@ -13,8 +13,6 @@ object App {
     val whitePlayerName = "Blue Ocean"
     val blackPlayerName = "Developer"
 
-    val machinePlayer = Player(blackPlayerName)
-
     // could be loaded from database or initialized from scratch
     val game = Game.standard(Player(whitePlayerName), Player(blackPlayerName))
 
@@ -22,17 +20,18 @@ object App {
     // @todo allow to draw, resign
     // @todo notification for check
     // @todo notification for resign, checkmate and so on
-    // @todo play with AI
     // @todo play by network
     // @todo how to ask for draw, how to resign in this architecture of game loop?
     // @todo how to ask for pawn promotion
     // @todo render history in PGN notation
     // @todo start game with FEN or PGN
-    // @todo network game
-    // @todo cover with tests
-    // @todo play with machine
 
+    // @todo cover chessapi with tests for %100
+
+    val machinePlayer = Player(blackPlayerName)
     withMachineLoop(game, machinePlayer)
+
+//    sameComputerLoop(game)
   }
 
   def withMachineLoop(game: Game, machinePlayer: Player): Unit = {

@@ -1,6 +1,5 @@
 package kchess.chess
 
-import kchess.chess.Position
 import org.scalatest.FlatSpec
 
 class PositionSpec extends FlatSpec {

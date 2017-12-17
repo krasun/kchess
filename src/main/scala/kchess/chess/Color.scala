@@ -1,6 +1,6 @@
 package kchess.chess
 
-trait Color {
+sealed trait Color {
   def opposite: Color = this match {
     case White() => Black()
     case Black() => White()
