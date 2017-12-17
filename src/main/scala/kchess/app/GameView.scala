@@ -6,6 +6,31 @@ import scala.io.StdIn
 import scala.util.{Failure, Success, Try}
 
 object GameView {
+  def askMachineToMove(player: Player, color: Color): Unit = {
+    val name = player.name
+    val colorAsText = color.toString.toLowerCase
+    printf(s"$name ($colorAsText), moves: ")
+  }
+
+  def machineMoves(move: (Position, Position)): Unit = {
+    val (from, to) = move
+    print(s"$from $to")
+    println()
+  }
+
+  def askGameType(): Unit = {
+    println()
+    println("Game types:")
+
+    println("  1. Human vs human (same machine);")
+    println("  2. Play with the machine;")
+    println("  3. Create network game;")
+    println("  4. Join network game.")
+
+    println()
+    print("Enter game type:")
+  }
+
   val QuitCommand = "quit"
 
   def renderFailureMessage(message: String): Unit = println(s"\033[31m$message")

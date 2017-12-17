@@ -53,6 +53,9 @@ object Rules {
       Failure(new Exception(s"There is no piece at $fromAsString."))
   }
 
+  def availableMoves(board: Board, color: Color, history: History): List[(Piece, Position, Position, Option[Piece])] =
+    availableMovesOf(board, color, history).map(m => (m.selectedPiece, m.from, m.to, m.capturesPiece))
+
   def isCheck(board: Board, history: History): Option[Color] = Color.values.find(isKingAtCheck(board, _, history))
 
   def isCheckmate(board: Board, history: History): Option[Color] = Color.values.find(isKingAtCheckmateFor(board, _, history))
@@ -69,11 +72,11 @@ object Rules {
   }
 
   def isKingAtCheckmateFor(board: Board, color: Color, history: History): Boolean = {
-    isKingAtCheck(board, color, history) && availableMoves(board, color, history).isEmpty
+    isKingAtCheck(board, color, history) && availableMovesOf(board, color, history).isEmpty
   }
 
   def isStalemateFor(board: Board, color: Color, history: History): Boolean = {
-    !isKingAtCheck(board, color, history) && availableMoves(board, color, history).isEmpty
+    !isKingAtCheck(board, color, history) && availableMovesOf(board, color, history).isEmpty
   }
 
   private def availableMovesFor(board: Board, selectedPiece: Piece, from: Position, history: History): List[PossibleMove] = {
@@ -91,7 +94,7 @@ object Rules {
     }
   }
 
-  private def availableMoves(board: Board, color: Color, history: History): List[PossibleMove] =
+  private def availableMovesOf(board: Board, color: Color, history: History): List[PossibleMove] =
     (for ((position, piece) <- board.ofColor(color)) yield availableMovesFor(board, piece, position, history)).flatten.toList
 
 

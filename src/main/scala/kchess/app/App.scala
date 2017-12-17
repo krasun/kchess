@@ -1,5 +1,6 @@
 package kchess.app
 
+import kchess.ai.Machine
 import kchess.chess._
 
 import scala.annotation.tailrec
@@ -11,6 +12,8 @@ object App {
     // could be received from arguments or loaded from database
     val whitePlayerName = "Blue Ocean"
     val blackPlayerName = "Developer"
+
+    val machinePlayer = Player(blackPlayerName)
 
     // could be loaded from database or initialized from scratch
     val game = Game.standard(Player(whitePlayerName), Player(blackPlayerName))
@@ -27,12 +30,65 @@ object App {
     // @todo start game with FEN or PGN
     // @todo network game
     // @todo cover with tests
+    // @todo play with machine
 
-    loop(game)
+    withMachineLoop(game, machinePlayer)
+  }
+
+  def withMachineLoop(game: Game, machinePlayer: Player): Unit = {
+    game.state match {
+
+      case ExpectsMove(player, color) =>
+
+        GameView.renderBoard(game.board)
+
+        if (player == machinePlayer) {
+          GameView.askMachineToMove(player, color)
+
+          val (from, to) = Machine.move(game, machinePlayer)
+          GameView.machineMoves((from, to))
+
+          game.applyMove(from ,to) match {
+            case Success(updatedGame) => withMachineLoop(updatedGame, machinePlayer)
+
+            case Failure(exception) =>
+              GameView.renderFailureMessage(exception.getMessage)
+              withMachineLoop(game, machinePlayer)
+          }
+        } else {
+
+          GameView.askToMove(player, color) match {
+            // move has been parsed successfully
+            case Success((from, to)) =>
+              game.applyMove(from ,to) match {
+                case Success(updatedGame) => withMachineLoop(updatedGame, machinePlayer)
+
+                case Failure(exception) =>
+                  GameView.renderFailureMessage(exception.getMessage)
+                  withMachineLoop(game, machinePlayer)
+              }
+
+            case Failure(exception) => exception match {
+              case QuitGameException(message) =>
+                GameView.renderAbortedGame(message)
+              case _ =>
+                GameView.renderFailureMessage(exception.getMessage)
+                withMachineLoop(game, machinePlayer)
+            }
+          }
+        }
+      case Stalemate() =>
+        GameView.renderBoard(game.board)
+        GameView.renderStalemateMessage(game)
+
+      case Checkmate(winner, loser, winnerColor, loserColor) =>
+        GameView.renderBoard(game.board)
+        GameView.renderCheckmateMessage(winner, loser, winnerColor, loserColor)
+    }
   }
 
   @tailrec
-  def loop(game: Game): Unit = {
+  def sameComputerLoop(game: Game): Unit = {
     game.state match {
 
       case ExpectsMove(player, color) =>
@@ -42,11 +98,11 @@ object App {
           // move has been parsed successfully
           case Success((from, to)) =>
             game.applyMove(from ,to) match {
-              case Success(updatedGame) => loop(updatedGame)
+              case Success(updatedGame) => sameComputerLoop(updatedGame)
 
               case Failure(exception) =>
                 GameView.renderFailureMessage(exception.getMessage)
-                loop(game)
+                sameComputerLoop(game)
             }
 
           case Failure(exception) => exception match {
@@ -54,7 +110,7 @@ object App {
               GameView.renderAbortedGame(message)
             case _ =>
               GameView.renderFailureMessage(exception.getMessage)
-              loop(game)
+              sameComputerLoop(game)
           }
         }
 
