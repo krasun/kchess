@@ -31,27 +31,56 @@ object Rules {
         Failure(new Exception(s"Expects move of $expectsColor piece!"))
       } else {
 
-        val kingCaptureSafeMoves = captureKingSafeFilter(kingUnsafePossibleMoves(board, selectedPiece, from, history))
-        val withoutOpenForCheckMoves = withoutChecksKingFilter(board, history, kingCaptureSafeMoves)
-
-        withoutOpenForCheckMoves.find(_.to == to) match {
+        val moves = availableMovesFor(board, selectedPiece, from, history)
+        moves.find(_.to == to) match {
           case Some(possibleMove) =>
 
             Success(CheckResult(selectedPiece, possibleMove.capturesAt))
 
           case None =>
             val message =
-              if (withoutOpenForCheckMoves.isEmpty) "Invalid move!"
+              if (moves.isEmpty) "Invalid move!"
               else {
-                val possiblePosstionsAsText = withoutOpenForCheckMoves.map(_.to).mkString(", ")
+                val possiblePosstionsAsText = moves.map(_.to).mkString(", ")
                 s"Invalid move! Available positions: $possiblePosstionsAsText."
               }
+
             Failure(new Exception(message))
         }
       }
     case None =>
       val fromAsString = from.toString
       Failure(new Exception(s"There is no piece at $fromAsString."))
+  }
+
+  def isCheck(board: Board, history: History): Option[Color] = Color.values.find(isKingAtCheck(board, _, history))
+
+  def isCheckmate(board: Board, history: History): Option[Color] = Color.values.find(isKingAtCheckmateFor(board, _, history))
+
+  def isStalemate(board: Board, history: History): Boolean = Color.values.exists(isStalemateFor(board, _, history))
+
+  def isKingAtCheck(board: Board, color: Color, history: History): Boolean = {
+    val kingPosition = board.kingPosition(color)
+
+    // find at least one which can attack king
+    board.ofColor(color.opposite).exists {
+      case (enemyPosition, enemyPiece) => !enemyPiece.isInstanceOf[King] && attacksKing(board, enemyPiece, enemyPosition, kingPosition, history)
+    }
+  }
+
+  def isKingAtCheckmateFor(board: Board, color: Color, history: History): Boolean = {
+    isKingAtCheck(board, color, history) && availableMoves(board, color, history).isEmpty
+  }
+
+  def isStalemateFor(board: Board, color: Color, history: History): Boolean = {
+    !isKingAtCheck(board, color, history) && availableMoves(board, color, history).isEmpty
+  }
+
+  private def availableMovesFor(board: Board, selectedPiece: Piece, from: Position, history: History): List[PossibleMove] = {
+    val kingCaptureSafeMoves = captureKingSafeFilter(kingUnsafePossibleMoves(board, selectedPiece, from, history))
+    val withoutOpenForCheckMoves = withoutChecksKingFilter(board, history, kingCaptureSafeMoves)
+
+    withoutOpenForCheckMoves
   }
 
   private def applyMove(board: Board, history: History, possibleMove: PossibleMove): Try[(Board, History)] = {
@@ -62,23 +91,9 @@ object Rules {
     }
   }
 
-  def isKingAtCheck(board: Board, color: Color.Value, history: History): Boolean = {
-    val kingPosition = board.kingPosition(color)
+  private def availableMoves(board: Board, color: Color, history: History): List[PossibleMove] =
+    (for ((position, piece) <- board.ofColor(color)) yield availableMovesFor(board, piece, position, history)).flatten.toList
 
-    // find at least one which can attack king
-    board.ofColor(color.opposite).exists {
-      case (enemyPosition, enemyPiece) => !enemyPiece.isInstanceOf[King] && attacksKing(board, enemyPiece, enemyPosition, kingPosition, history)
-    }
-  }
-
-  private def isKingAtCheckmate(board: Board, color: Color.Value, history: History): Boolean = {
-    ???
-  }
-
-
-  private def isStalemate(board: Board, color: Color.Value, history: History): Boolean = {
-    ???
-  }
 
   // it also filters moves if king is under check
   private def withoutChecksKingFilter(board: Board, history: History, possibleMoves: List[PossibleMove]): List[PossibleMove] = {
@@ -111,8 +126,8 @@ object Rules {
 
   private def kingUnsafePossibleMovesByPawn(board: Board, selectedPiece: Piece, from: Position, history: History): List[PossibleMove] = {
     val (initialRow, direction) = selectedPiece.color match {
-      case Color.White => (2, +1)
-      case Color.Black => (7, -1)
+      case White() => (2, +1)
+      case Black() => (7, -1)
     }
 
     val simpleStep: Position => (Boolean, Option[Piece], Option[Position]) = (p: Position) => (board.at(p).isEmpty, None, None)

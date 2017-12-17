@@ -5,7 +5,7 @@ case class History(moves: List[Move]) {
 
   def :+ (move: Move): History = History(moves :+ move)
 
-  def nextColor: Color.Value = lastOption.map(m => m.movedPiece.color.opposite).getOrElse(Color.White)
+  def nextColor: Color = lastOption.map(m => m.movedPiece.color.opposite).getOrElse(White())
 }
 
 object History {
