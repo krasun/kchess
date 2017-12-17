@@ -1,4 +1,4 @@
-package kchess
+package kchess.chess
 
 case class History(moves: List[Move]) {
   def lastOption: Option[Move] = moves.lastOption

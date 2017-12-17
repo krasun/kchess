@@ -1,4 +1,4 @@
-package kchess
+package kchess.chess
 
 import scala.util.{Try, Success, Failure}
 

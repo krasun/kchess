@@ -1,4 +1,4 @@
-package kchess
+package kchess.chess
 
 sealed trait Piece {
   def color: Color

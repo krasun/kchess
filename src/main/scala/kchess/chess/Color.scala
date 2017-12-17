@@ -1,4 +1,4 @@
-package kchess
+package kchess.chess
 
 trait Color {
   def opposite: Color = this match {

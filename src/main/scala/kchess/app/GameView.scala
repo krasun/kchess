@@ -1,6 +1,6 @@
-package app
+package kchess.app
 
-import kchess._
+import kchess.chess._
 
 import scala.io.StdIn
 import scala.util.{Failure, Success, Try}

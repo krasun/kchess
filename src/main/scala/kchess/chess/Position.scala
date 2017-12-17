@@ -1,4 +1,4 @@
-package kchess
+package kchess.chess
 
 case class Position(row: Int, column: Int) {
   def file: String = ('a' + column - 1).toChar.toString

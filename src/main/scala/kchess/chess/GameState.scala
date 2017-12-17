@@ -1,4 +1,4 @@
-package kchess
+package kchess.chess
 
 sealed trait GameState {
   def isGameOver: Boolean = this match {
