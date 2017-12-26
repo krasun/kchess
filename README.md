@@ -1,6 +1,8 @@
 kchess
 ======
 
+[![Build Status](https://travis-ci.org/krasun/kchess.svg?branch=master)](https://travis-ci.org/krasun/kchess)
+
 Chess written in functional way using [Scala](https://www.scala-lang.org/) language.
 
 Packages:
