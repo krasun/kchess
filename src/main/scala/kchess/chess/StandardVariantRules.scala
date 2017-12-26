@@ -2,8 +2,7 @@ package kchess.chess
 
 import scala.util.{Failure, Success, Try}
 
-object Rules {
-
+object StandardVariantRules {
   case class PossibleMove(from: Position, to: Position, selectedPiece: Piece, capturesPiece: Option[Piece], capturesAt: Option[Position])
 
   private val BishopDirections = List(
@@ -97,7 +96,6 @@ object Rules {
   private def availableMovesOf(board: Board, color: Color, history: History): List[PossibleMove] =
     (for ((position, piece) <- board.ofColor(color)) yield availableMovesFor(board, piece, position, history)).flatten.toList
 
-
   // it also filters moves if king is under check
   private def withoutChecksKingFilter(board: Board, history: History, possibleMoves: List[PossibleMove]): List[PossibleMove] = {
     def filterMoves(possibleMove: PossibleMove): Boolean = applyMove(board, history, possibleMove) match {
@@ -187,6 +185,8 @@ object Rules {
 
   private def kingUnsafePossibleMovesByKing(board: Board, selectedPiece: Piece, from: Position): List[PossibleMove] = {
     val allMoves = for (kingDirection <- KingDirections; to <- from + kingDirection) yield to
+
+    // @todo castling
 
     allMoves
       .filter(to => board.at(to).isEmpty || board.at(to).get.color != selectedPiece.color)

@@ -3,7 +3,6 @@ package kchess.chess
 import scala.util.{Try, Failure, Success}
 
 case class Board(pieces: Map[Position, Piece]) {
-
   def ofColor(color: Color): Map[Position, Piece] = for ((position, piece) <- pieces if piece.color == color) yield position -> piece
 
   def kingPosition(color: Color): Position =

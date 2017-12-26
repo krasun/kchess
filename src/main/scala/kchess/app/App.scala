@@ -25,13 +25,14 @@ object App {
     // @todo how to ask for pawn promotion
     // @todo render history in PGN notation
     // @todo start game with FEN or PGN
+    // @todo implement https://en.wikipedia.org/wiki/Fifty-move_rule
 
     // @todo cover chessapi with tests for %100
 
-    val machinePlayer = Player(blackPlayerName)
-    withMachineLoop(game, machinePlayer)
+//    val machinePlayer = Player(blackPlayerName)
+//    withMachineLoop(game, machinePlayer)
 
-//    sameComputerLoop(game)
+    sameComputerLoop(game)
   }
 
   def withMachineLoop(game: Game, machinePlayer: Player): Unit = {
@@ -123,4 +124,3 @@ object App {
     }
   }
 }
-

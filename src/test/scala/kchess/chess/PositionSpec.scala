@@ -3,6 +3,22 @@ package kchess.chess
 import org.scalatest.FlatSpec
 
 class PositionSpec extends FlatSpec {
+  "Add tuple" should "increment position" in {
+    assert((Position.A1 + (1, 1)).get === Position.B2)
+  }
+
+  "Add tuple" should "return nothing for invalid position" in {
+    assert((Position.A1 + (-1, -1)).isEmpty)
+  }
+
+  "A1" should "have string representation as A1" in {
+    assert(Position.A1.toString === "a1")
+  }
+
+  "H8" should "have string representation as H8" in {
+    assert(Position.H8.toString === "h8")
+  }
+
   "Up" should "inrement row by 1 (A1.up == A2)" in {
     assert(Position.A1.up().get === Position.A2)
   }
