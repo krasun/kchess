@@ -55,10 +55,30 @@ class StandardVariantRulesSpec extends FlatSpec {
     assert(exception.getMessage === "Invalid move! Available positions: e3, e4.")
   }
 
+  "White Knight on B1 (standard board)" should "have C3 as available move" in {
+    val Success(result) = StandardVariantRules.checkMove(standardBoard, Position.B1, Position.C3, history)
+
+    assert(result === CheckResult(Knight(White()), None))
+  }
+
+  "White Knight on B1 (standard board)" should "have A3 as available move" in {
+    val Success(result) = StandardVariantRules.checkMove(standardBoard, Position.B1, Position.A3, history)
+
+    assert(result === CheckResult(Knight(White()), None))
+  }
+
+  "White Knight" should "capture black piece" in {
+    val Success(updatedBoard) = standardBoard.move(Position.E7, Position.C3)
+
+    val Success(result) = StandardVariantRules.checkMove(updatedBoard, Position.B1, Position.C3, history)
+
+    assert(result === CheckResult(Knight(White()), None))
+  }
+
   // @todo test cases for each type of figures
   // - pawn
   //  - en passant
-  // - knight
+  //  - promotion
   // - bishop
   // - castles
   // - checkmate
