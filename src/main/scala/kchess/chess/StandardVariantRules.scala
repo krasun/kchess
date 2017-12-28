@@ -55,6 +55,9 @@ object StandardVariantRules {
   def availableMoves(board: Board, color: Color, history: History): List[(Piece, Position, Position, Option[Piece])] =
     availableMovesOf(board, color, history).map(m => (m.selectedPiece, m.from, m.to, m.capturesPiece))
 
+  def availableMoves(board: Board, piece: Piece, from: Position, history: History): List[(Piece, Position, Position, Option[Piece])] =
+    availableMovesFor(board, piece, from, history).map(m => (m.selectedPiece, m.from, m.to, m.capturesPiece))
+
   def isCheck(board: Board, history: History): Option[Color] = Color.values.find(isKingAtCheck(board, _, history))
 
   def isCheckmate(board: Board, history: History): Option[Color] = Color.values.find(isKingAtCheckmateFor(board, _, history))
@@ -62,11 +65,14 @@ object StandardVariantRules {
   def isStalemate(board: Board, history: History): Boolean = Color.values.exists(isStalemateFor(board, _, history))
 
   def isKingAtCheck(board: Board, color: Color, history: History): Boolean = {
-    val kingPosition = board.kingPosition(color)
-
-    // find at least one which can attack king
-    board.ofColor(color.opposite).exists {
-      case (enemyPosition, enemyPiece) => !enemyPiece.isInstanceOf[King] && attacksKing(board, enemyPiece, enemyPosition, kingPosition, history)
+    board.kingPosition(color) match {
+      case Some(kingPosition) =>
+        // find at least one which can attack king
+        board.ofColor(color.opposite).exists {
+          case (enemyPosition, enemyPiece) => !enemyPiece.isInstanceOf[King] && attacksKing(board, enemyPiece, enemyPosition, kingPosition, history)
+        }
+      // king could not be at check on board without king
+      case None => false
     }
   }
 

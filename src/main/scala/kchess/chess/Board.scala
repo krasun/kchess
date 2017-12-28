@@ -5,8 +5,8 @@ import scala.util.{Try, Failure, Success}
 case class Board(pieces: Map[Position, Piece]) {
   def ofColor(color: Color): Map[Position, Piece] = for ((position, piece) <- pieces if piece.color == color) yield position -> piece
 
-  def kingPosition(color: Color): Position =
-    (for ((position, piece) <- pieces if piece.color == color && piece.isInstanceOf[King]) yield position).head
+  def kingPosition(color: Color): Option[Position] =
+    (for ((position, piece) <- pieces if piece.color == color && piece.isInstanceOf[King]) yield position).headOption
 
   def at(position: Position): Option[Piece] = pieces.get(position)
 

@@ -80,11 +80,11 @@ class BoardSpec extends FlatSpec {
   }
 
   "White king position" should "is E1" in {
-    assert(standardBoard.kingPosition(White()) === Position.E1)
+    assert(standardBoard.kingPosition(White()) === Some(Position.E1))
   }
 
   "Black king position" should "is E8" in {
-    assert(standardBoard.kingPosition(Black()) === Position.E8)
+    assert(standardBoard.kingPosition(Black()) === Some(Position.E8))
   }
 
   "Color of white" should "return pieces of white color" in {

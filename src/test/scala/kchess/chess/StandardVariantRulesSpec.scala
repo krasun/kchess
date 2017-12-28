@@ -105,11 +105,144 @@ class StandardVariantRulesSpec extends FlatSpec {
     assert(result === CheckResult(Bishop(White()), None))
   }
 
+  "White Queen on D1 (standard board)" should "not have D2 as available move" in {
+    val Failure(exception) = StandardVariantRules.checkMove(standardBoard, Position.D1, Position.D2, history)
+
+    assert(exception.getMessage === "Invalid move!")
+  }
+
+  "White Queen on D1 (standard board)" should "not have C2 as available move" in {
+    val Failure(exception) = StandardVariantRules.checkMove(standardBoard, Position.D1, Position.C2, history)
+
+    assert(exception.getMessage === "Invalid move!")
+  }
+
+  "White Queen on D1" should "have E2 as available diagonal move" in {
+    val Success(updatedBoard) = standardBoard.move(Position.E2, Position.E4)
+
+    val Success(result) = StandardVariantRules.checkMove(updatedBoard, Position.D1, Position.E2, history)
+
+    assert(result === CheckResult(Queen(White()), None))
+  }
+
+  "White Queen on D1" should "have F3 as available diagonal move" in {
+    val Success(updatedBoard) = standardBoard.move(Position.E2, Position.E4)
+
+    val Success(result) = StandardVariantRules.checkMove(updatedBoard, Position.D1, Position.F3, history)
+
+    assert(result === CheckResult(Queen(White()), None))
+  }
+
+  "White Queen on empty board" should "have available diagonal, horizontal and vertical positions" in {
+    val board = Board(Map(Position.D4 -> Queen(White())))
+
+    val availablePositions = StandardVariantRules.availableMoves(board, Queen(White()), Position.D4, history).map(_._3).toSet
+
+    assert(availablePositions === Set(
+      Position.D1,
+      Position.D2,
+      Position.D3,
+      Position.D5,
+      Position.D6,
+      Position.D7,
+      Position.D8,
+
+      Position.A4,
+      Position.B4,
+      Position.C4,
+      Position.E4,
+      Position.F4,
+      Position.G4,
+      Position.H4,
+
+      Position.A1,
+      Position.B2,
+      Position.C3,
+      Position.E5,
+      Position.F6,
+      Position.G7,
+      Position.H8,
+
+      Position.A7,
+      Position.B6,
+      Position.C5,
+      Position.E3,
+      Position.F2,
+      Position.G1
+    ))
+  }
+
+  "White Queen" should "not go through obstacles" in {
+    val board = Board(Map(
+      Position.D4 -> Queen(White()),
+      Position.D6 -> Pawn(White()),
+      Position.D2 -> Pawn(White()),
+      Position.C4 -> Pawn(White()),
+      Position.G4 -> Pawn(White()),
+      Position.B2 -> Pawn(White()),
+      Position.G7 -> Pawn(White()),
+      Position.B6 -> Pawn(White()),
+      Position.F2 -> Pawn(White())
+    ))
+
+    val availablePositions = StandardVariantRules.availableMoves(board, Queen(White()), Position.D4, history).map(_._3).toSet
+
+    assert(availablePositions === Set(
+      Position.D3,
+      Position.F6,
+      Position.E3,
+      Position.F4,
+      Position.E4,
+      Position.D5,
+      Position.E5,
+      Position.C5,
+      Position.C3
+    ))
+  }
+
+  "White Queen" should "attack obstacles, not King" in {
+    val board = Board(Map(
+      Position.D4 -> Queen(White()),
+      Position.D6 -> Pawn(Black()),
+      Position.D2 -> Pawn(Black()),
+      Position.C4 -> Pawn(Black()),
+      Position.G4 -> Pawn(Black()),
+      Position.B2 -> King(Black()),
+      Position.G7 -> Pawn(Black()),
+      Position.B6 -> Pawn(Black()),
+      Position.F2 -> Pawn(Black())
+    ))
+
+    val availablePositions = StandardVariantRules.availableMoves(board, Queen(White()), Position.D4, history).map(_._3).toSet
+
+    assert(availablePositions === Set(
+      Position.D3,
+      Position.F6,
+      Position.E3,
+      Position.F4,
+      Position.E4,
+      Position.D5,
+      Position.E5,
+      Position.C5,
+      Position.C3,
+      Position.D6,
+      Position.D2,
+      Position.C4,
+      Position.G4,
+      Position.G7,
+      Position.B6,
+      Position.F2
+    ))
+  }
+
+
   // @todo test cases for each type of figures
   // - pawn
   //  - en passant
   //  - promotion
   // - castles
+  // - rook
+  // - king
   // - checkmate
   // - check
   // - stalemate
