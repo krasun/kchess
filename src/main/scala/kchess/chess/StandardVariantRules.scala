@@ -91,10 +91,10 @@ object StandardVariantRules {
 
   private def applyMove(board: Board, history: History, possibleMove: PossibleMove): Try[(Board, History)] = {
     val dropAt = possibleMove.capturesAt.getOrElse(possibleMove.to)
-    board.drop(dropAt).move(possibleMove.from, possibleMove.to) match {
-      case Success(updatedBoard) => Success((updatedBoard, history :+ Move(possibleMove.selectedPiece, possibleMove.from, possibleMove.to)))
-      case Failure(exception) => Failure(exception)
-    }
+    board
+      .drop(dropAt)
+      .move(possibleMove.from, possibleMove.to)
+      .map(updatedBoard => (updatedBoard, history :+ Move(possibleMove.selectedPiece, possibleMove.from, possibleMove.to)))
   }
 
   private def availableMovesOf(board: Board, color: Color, history: History): List[PossibleMove] =
@@ -102,10 +102,10 @@ object StandardVariantRules {
 
   // it also filters moves if king is under check
   private def withoutChecksKingFilter(board: Board, history: History, possibleMoves: List[PossibleMove]): List[PossibleMove] = {
-    def filterMoves(possibleMove: PossibleMove): Boolean = applyMove(board, history, possibleMove) match {
-      case Success((updatedBoard, updatedHistory)) => !isKingAtCheck(updatedBoard, possibleMove.selectedPiece.color, updatedHistory)
-      case _ => false
-    }
+    def filterMoves(possibleMove: PossibleMove): Boolean =
+      applyMove(board, history, possibleMove).map {
+        case (updatedBoard, updatedHistory) => !isKingAtCheck(updatedBoard, possibleMove.selectedPiece.color, updatedHistory)
+      }.getOrElse(false)
 
     possibleMoves.filter(filterMoves)
   }

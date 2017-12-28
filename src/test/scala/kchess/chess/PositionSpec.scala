@@ -11,6 +11,10 @@ class PositionSpec extends FlatSpec {
     assert((Position.A1 + (-1, -1)).isEmpty)
   }
 
+  "Apply" should "return Position by string" in {
+    assert(Position('a', '1') === Position.A1)
+  }
+
   "A1" should "have string representation as A1" in {
     assert(Position.A1.toString === "a1")
   }

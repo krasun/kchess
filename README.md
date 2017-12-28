@@ -13,7 +13,7 @@ Packages:
 * **kchess/chess** - is pure chess API, chess domain, library;
 * **kchess/ai** - is simple chess "AI".
 
-Credits: 
+Credits:
 
 1. The source of architectural ideas is [scalachess library](https://github.com/ornicar/scalachess). 
 2. [Guide to building a simple chess AI](https://medium.freecodecamp.org/simple-chess-ai-step-by-step-1d55a9266977).

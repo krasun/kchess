@@ -23,7 +23,32 @@ class GameSpec extends FlatSpec {
   }
 
   "Game" should "status" in {
-    // @todo test checkmate, stalemate, promotion, draw?
+    // @todo test promotion, draw?
+  }
+
+  "Game" should "have checkmate state" in {
+    val board = Board(Map(
+      Position.A1 -> King(White()),
+      Position.C4 -> Bishop(Black()),
+      Position.B4 -> Rook(Black()),
+      Position.A4 -> Rook(Black())
+    ))
+
+    val game = Game(board, whitePlayer, blackPlayer, History(List()))
+
+    assert(game.state === Checkmate(blackPlayer, whitePlayer, Black(), White()))
+  }
+
+  "Game" should "have stalemate state" in {
+    val board = Board(Map(
+      Position.A1 -> King(White()),
+      Position.C4 -> Bishop(Black()),
+      Position.B4 -> Rook(Black())
+    ))
+
+    val game = Game(board, whitePlayer, blackPlayer, History(List()))
+
+    assert(game.state === Stalemate())
   }
 
   "Game" should "assign white color to white player" in {

@@ -7,6 +7,13 @@ import scala.util.{Failure, Random, Success, Try}
 
 object GameView {
 
+  val HumanGameType = 1
+  val MachineGameType = 2
+  val NetworkServerGameType = 3
+  val NetworkClientGameType = 4
+
+  val QuitCommand = "quit"
+
   // @todo draw by repeat of positions
   // @todo allow to draw, resign
   // @todo notification for check
@@ -53,14 +60,6 @@ object GameView {
       case Failure(exception) => GameView.renderFailureMessage(exception.getMessage)
     }
   }
-
-
-  val HumanGameType = 1
-  val MachineGameType = 2
-  val NetworkServerGameType = 3
-  val NetworkClientGameType = 4
-
-  val QuitCommand = "quit"
 
   def askMachineToMove(player: Player, color: Color): Unit = {
     val name = player.name

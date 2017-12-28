@@ -26,14 +26,12 @@ case class Game(board: Board, whitePlayer: Player, blackPlayer: Player, history:
     else ExpectsMove(currentPlayer, colorOf(currentPlayer))
   }
 
-  def applyMove(from: Position, to: Position): Try[Game] = StandardVariantRules.checkMove(board, from, to, history) match {
-    case Success(CheckResult(movedPiece, capturesAt)) =>
-      val dropAt = capturesAt.getOrElse(to)
-      board.drop(dropAt).move(from, to) match {
-        case Success(updatedBoard) => Success(Game(updatedBoard, whitePlayer, blackPlayer, history :+ Move(movedPiece, from, to)))
-        case Failure(exception) => Failure(exception)
-      }
-    case Failure(exception) => Failure(exception)
+  def applyMove(from: Position, to: Position): Try[Game] = StandardVariantRules.checkMove(board, from, to, history).flatMap{
+    case CheckResult(movedPiece, capturesAt) =>
+      board
+        .drop(capturesAt.getOrElse(to))
+        .move(from, to)
+        .map(updatedBoard => Game(updatedBoard, whitePlayer, blackPlayer, history :+ Move(movedPiece, from, to)))
   }
 }
 
