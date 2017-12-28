@@ -3,9 +3,65 @@ package kchess.app
 import kchess.chess._
 
 import scala.io.StdIn
-import scala.util.{Failure, Success, Try}
+import scala.util.{Failure, Random, Success, Try}
 
 object GameView {
+
+  // @todo draw by repeat of positions
+  // @todo allow to draw, resign
+  // @todo notification for check
+  // @todo notification for resign, checkmate and so on
+  // @todo play by network
+  // @todo how to ask for draw, how to resign in this architecture of game loop?
+  // @todo how to ask for pawn promotion
+  // @todo render history in PGN notation
+  // @todo start game with FEN or PGN
+  // @todo implement https://en.wikipedia.org/wiki/Fifty-move_rule
+
+  def run(): Unit = {
+    GameView.askGameType() match {
+      case Success(gameType) => gameType match {
+        case GameView.HumanGameType =>
+          // could be received from arguments or loaded from database
+          val whitePlayerName = "Player1"
+          val blackPlayerName = "Player2"
+
+          // could be loaded from database or initialized from scratch
+          val game = Game.standard(Player(whitePlayerName), Player(blackPlayerName))
+
+          GameLoop.loop(game, GameLoop.humanMove)
+
+        case GameView.MachineGameType =>
+          // could be received from arguments or loaded from database
+          val whitePlayerName = "PlayerName"
+          val blackPlayerName = "MachineName"
+
+          val whitePlayer = Player(whitePlayerName)
+          val blackPlayer = Player(blackPlayerName)
+
+          // could be loaded from database or initialized from scratch
+          val game = Game.standard(Player(whitePlayerName), Player(blackPlayerName))
+
+          val random = Random
+          val machinePlayer = if (random.nextInt() % 2 == 0) whitePlayer else blackPlayer
+
+          GameLoop.loop(game, GameLoop.configureMachineMove(game, machinePlayer))
+
+        case GameView.NetworkServerGameType => ???
+        case GameView.NetworkClientGameType => ???
+      }
+      case Failure(exception) => GameView.renderFailureMessage(exception.getMessage)
+    }
+  }
+
+
+  val HumanGameType = 1
+  val MachineGameType = 2
+  val NetworkServerGameType = 3
+  val NetworkClientGameType = 4
+
+  val QuitCommand = "quit"
+
   def askMachineToMove(player: Player, color: Color): Unit = {
     val name = player.name
     val colorAsText = color.toString.toLowerCase
@@ -18,20 +74,34 @@ object GameView {
     println()
   }
 
-  def askGameType(): Unit = {
+  def askGameType(): Try[Int] = {
+    renderMenu()
+
+    var input = StdIn.readLine()
+    while (input != QuitCommand && !(input.matches("\\d+") && 1 <= input.toInt && input.toInt <= 4)) {
+
+      renderMenu()
+      input = StdIn.readLine()
+
+      println(input)
+    }
+
+    if (input == QuitCommand) Failure(QuitGameException("Game is quitted."))
+    else Success(input.toInt)
+  }
+
+  def renderMenu(): Unit = {
     println()
     println("Game types:")
-
+    println()
     println("  1. Human vs human (same machine);")
     println("  2. Play with the machine;")
     println("  3. Create network game;")
     println("  4. Join network game.")
 
     println()
-    print("Enter game type:")
+    print("Enter game type (type 'quit' to quit): ")
   }
-
-  val QuitCommand = "quit"
 
   def renderFailureMessage(message: String): Unit = println(s"\u001b[31m$message")
 

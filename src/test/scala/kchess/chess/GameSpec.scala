@@ -16,6 +16,12 @@ class GameSpec extends FlatSpec {
     assert(actualGame === expectedGame)
   }
 
+  "Game" should "not accept players with the same name" in {
+    assertThrows[IllegalArgumentException] {
+      Game(Board.standard, Player("test"), Player("test"), History())
+    }
+  }
+
   "Game" should "status" in {
     // @todo test checkmate, stalemate, promotion, draw?
   }

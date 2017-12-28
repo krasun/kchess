@@ -3,6 +3,8 @@ package kchess.chess
 import scala.util.{Try, Success, Failure}
 
 case class Game(board: Board, whitePlayer: Player, blackPlayer: Player, history: History) {
+  require(whitePlayer.name != blackPlayer.name, "Player names should be different.")
+
   val colorOf = Map(
     whitePlayer -> White(),
     blackPlayer -> Black()

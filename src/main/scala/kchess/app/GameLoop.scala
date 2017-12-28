@@ -4,54 +4,54 @@ import kchess.ai.Machine
 import kchess.chess._
 
 import scala.annotation.tailrec
-import scala.util.{Failure, Success}
+import scala.util.{Failure, Random, Success, Try}
 
 object GameLoop {
+  def configureMachineMove(game: Game, machinePlayer: Player): (Game, Player, Color) => Try[(Position, Position)] = {
+
+    def machineMove(game: Game, player: Player, color: Color): Try[(Position, Position)] = {
+      if (player == machinePlayer) {
+        GameView.askMachineToMove(player, color)
+        val (from, to) = Machine.move(game, player)
+        GameView.machineMoves((from, to))
+
+        Success((from, to))
+      } else {
+        GameView.askToMove(player, color)
+      }
+    }
+
+    machineMove
+  }
+
+  def humanMove(game: Game, player: Player, color: Color): Try[(Position, Position)] = GameView.askToMove(player, color)
 
   @tailrec
-   def loop(game: Game): Unit = {
+   def loop(game: Game, playerMove: (Game, Player, Color) => Try[(Position, Position)]): Unit = {
     game.state match {
 
       case ExpectsMove(player, color) =>
-
         GameView.renderBoard(game.board)
 
-        // @todo implement game loop with AI machine
-//        if (player.isMachine) {
-//          GameView.askMachineToMove(player, color)
-//
-//          val (from, to) = Machine.move(game, player)
-//          GameView.machineMoves((from, to))
-//
-//          game.applyMove(from ,to) match {
-//            case Success(updatedGame) => loop(updatedGame)
-//
-//            case Failure(exception) =>
-//              GameView.renderFailureMessage(exception.getMessage)
-//              loop(game)
-//          }
-//        } else {
+        playerMove(game, player, color) match {
+          case Success((from, to)) =>
+            game.applyMove(from ,to) match {
+              case Success(updatedGame) => loop(updatedGame, playerMove)
 
-          GameView.askToMove(player, color) match {
-            // move has been parsed successfully
-            case Success((from, to)) =>
-              game.applyMove(from ,to) match {
-                case Success(updatedGame) => loop(updatedGame)
-
-                case Failure(exception) =>
-                  GameView.renderFailureMessage(exception.getMessage)
-                  loop(game)
-              }
-
-            case Failure(exception) => exception match {
-              case QuitGameException(message) =>
-                GameView.renderAbortedGame(message)
-              case _ =>
+              case Failure(exception) =>
                 GameView.renderFailureMessage(exception.getMessage)
-                loop(game)
+                loop(game, playerMove)
             }
-//          }
+
+          case Failure(exception) => exception match {
+            case QuitGameException(message) =>
+              GameView.renderAbortedGame(message)
+            case _ =>
+              GameView.renderFailureMessage(exception.getMessage)
+              loop(game, playerMove)
+          }
         }
+
       case Stalemate() =>
         GameView.renderBoard(game.board)
         GameView.renderStalemateMessage(game)
