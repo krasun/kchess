@@ -9,6 +9,40 @@ class StandardVariantRulesSpec extends FlatSpec {
   val standardBoard = Board.standard
   val history = History()
 
+  "Available moves" should "return all available moves" in {
+    val board = Board(Map(
+      Position.D4 -> King(White()),
+      Position.B2 -> Pawn(White())
+    ))
+
+    val availableMoves = StandardVariantRules.availableMoves(board, White(), history).toSet
+
+    assert(availableMoves === Set(
+      (King(White()), Position.D4, Position.D3, None),
+      (King(White()), Position.D4, Position.E3, None),
+      (King(White()), Position.D4, Position.E4, None),
+      (King(White()), Position.D4, Position.D5, None),
+      (King(White()), Position.D4, Position.E5, None),
+      (King(White()), Position.D4, Position.C5, None),
+      (King(White()), Position.D4, Position.C3, None),
+      (King(White()), Position.D4, Position.C4, None),
+      (Pawn(White()), Position.B2, Position.B3, None),
+      (Pawn(White()), Position.B2, Position.B4, None)
+    ))
+  }
+
+  "Black Pawn" should "not be moved at start" in {
+    val Failure(exception) = StandardVariantRules.checkMove(standardBoard, Position.E7, Position.E5, history)
+
+    assert(exception.getMessage === "Expects move of White piece!")
+  }
+
+  "Check move" should "fail if there is no piece" in {
+    val Failure(exception) = StandardVariantRules.checkMove(standardBoard, Position.E5, Position.E4, history)
+
+    assert(exception.getMessage === "There is no piece at e5.")
+  }
+
   "White Pawn on E2" should "have E3 as available move" in {
     val Success(result) = StandardVariantRules.checkMove(standardBoard, Position.E2, Position.E3, history)
 
@@ -53,6 +87,14 @@ class StandardVariantRulesSpec extends FlatSpec {
     val Failure(exception) = StandardVariantRules.checkMove(board, Position.E2, Position.E1, history)
 
     assert(exception.getMessage === "Invalid move! Available positions: e3, e4.")
+  }
+
+  "White Pawn on E5" should "have D6 as available move (en passant)" in {
+    val Success(updatedBoard) = standardBoard.move(Position.E2, Position.E5).get.move(Position.D7, Position.D5)
+
+    val Success(result) = StandardVariantRules.checkMove(updatedBoard, Position.E5, Position.D6, History(List(Move(Pawn(Black()), Position.D7, Position.D5))))
+
+    assert(result === CheckResult(Pawn(White()), Some(Position.D5)))
   }
 
   "White Knight on B1 (standard board)" should "have C3 as available move" in {
@@ -444,10 +486,4 @@ class StandardVariantRulesSpec extends FlatSpec {
       Position.A4
     ))
   }
-
-  // @todo test cases for each type of figures
-  // - pawn
-  //  - en passant
-  //  - promotion
-  // - castles
 }

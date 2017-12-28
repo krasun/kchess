@@ -9,3 +9,9 @@ libraryDependencies += "org.scalatest" %% "scalatest" % "3.0.4" % "test"
 scalacOptions ++= Seq(
   "-deprecation"
 )
+
+coverageMinimum := 80
+
+coverageFailOnMinimum := true
+
+coverageHighlighting := true

@@ -58,8 +58,6 @@ object StandardVariantRules {
   def availableMoves(board: Board, piece: Piece, from: Position, history: History): List[(Piece, Position, Position, Option[Piece])] =
     availableMovesFor(board, piece, from, history).map(m => (m.selectedPiece, m.from, m.to, m.capturesPiece))
 
-  def isCheck(board: Board, history: History): Option[Color] = Color.values.find(isKingAtCheck(board, _, history))
-
   def isCheckmate(board: Board, history: History): Option[Color] = Color.values.find(isKingAtCheckmateFor(board, _, history))
 
   def isStalemate(board: Board, history: History): Boolean = Color.values.exists(isStalemateFor(board, _, history))
@@ -145,7 +143,7 @@ object StandardVariantRules {
       case _ => (false, None, None)
     }
 
-    // @todo implement promotion
+    // @todo implement promotion (covered by tests)
 
     val validations = List(
       (from + (direction, 0), simpleStep),
