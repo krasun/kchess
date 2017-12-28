@@ -309,13 +309,145 @@ class StandardVariantRulesSpec extends FlatSpec {
     ))
   }
 
+
+  "White King on empty board" should "have available diagonal, horizontal and vertical positions" in {
+    val board = Board(Map(Position.D4 -> King(White())))
+
+    val availablePositions = StandardVariantRules.availableMoves(board, King(White()), Position.D4, history).map(_._3).toSet
+
+    assert(availablePositions === Set(
+      Position.D3,
+      Position.E3,
+      Position.E4,
+      Position.D5,
+      Position.E5,
+      Position.C5,
+      Position.C3,
+      Position.C4
+    ))
+  }
+
+  "White King" should "attack obstacles, not King" in {
+    val board = Board(Map(
+      Position.D4 -> King(White()),
+
+      Position.D3 -> Pawn(Black()),
+      Position.E3 -> Pawn(Black()),
+      Position.E4 -> Pawn(Black()),
+      Position.D5 -> Pawn(Black()),
+      Position.E5 -> Pawn(Black()),
+      Position.C5 -> Pawn(Black()),
+      Position.C3 -> Pawn(Black()),
+      Position.C4 -> Pawn(Black()),
+      Position.B5 -> Pawn(Black())
+    ))
+
+    val availablePositions = StandardVariantRules.availableMoves(board, King(White()), Position.D4, history).map(_._3).toSet
+
+    assert(availablePositions === Set(
+      Position.E3,
+      Position.D5,
+      Position.E5,
+      Position.C5,
+      Position.C3
+    ))
+  }
+
+  "White King" should "be checked by Black Pawn" in {
+    val board = Board(Map(
+      Position.D4 -> King(White()),
+      Position.C5 -> Pawn(Black())
+    ))
+
+    assert(StandardVariantRules.isKingAtCheck(board, White(), history))
+  }
+
+  "White King" should "be checked by Black Bishop" in {
+    val board = Board(Map(
+      Position.D4 -> King(White()),
+      Position.A7 -> Bishop(Black())
+    ))
+
+    assert(StandardVariantRules.isKingAtCheck(board, White(), history))
+  }
+
+  "White King" should "be checked by Black Rook" in {
+    val board = Board(Map(
+      Position.D4 -> King(White()),
+      Position.D8 -> Rook(Black())
+    ))
+
+    assert(StandardVariantRules.isKingAtCheck(board, White(), history))
+  }
+
+  "White King" should "be checked by Black Queen by diagonal" in {
+    val board = Board(Map(
+      Position.D4 -> King(White()),
+      Position.A7 -> Queen(Black())
+    ))
+
+    assert(StandardVariantRules.isKingAtCheck(board, White(), history))
+  }
+
+  "White King" should "be checked by Black Queen by horizontal" in {
+    val board = Board(Map(
+      Position.D4 -> King(White()),
+      Position.A4 -> Queen(Black())
+    ))
+
+    assert(StandardVariantRules.isKingAtCheck(board, White(), history))
+  }
+
+  "White King" should "be checked by Black Queen by vertical" in {
+    val board = Board(Map(
+      Position.D4 -> King(White()),
+      Position.D8 -> Queen(Black())
+    ))
+
+    assert(StandardVariantRules.isKingAtCheck(board, White(), history))
+  }
+
+  "White King" should "be in stalemate position" in {
+    val board = Board(Map(
+      Position.A1 -> King(White()),
+      Position.C4 -> Bishop(Black()),
+      Position.B4 -> Rook(Black())
+    ))
+
+    assert(StandardVariantRules.isStalemate(board, history))
+  }
+
+  "White King" should "be in сheckmate position" in {
+    val board = Board(Map(
+      Position.A1 -> King(White()),
+      Position.C4 -> Bishop(Black()),
+      Position.B4 -> Rook(Black()),
+      Position.A4 -> Rook(Black())
+    ))
+
+    assert(StandardVariantRules.isCheckmate(board, history) === Some(White()))
+  }
+
+  "White piece" should "not open King for check" in {
+    val board = Board(Map(
+      Position.A1 -> King(White()),
+      Position.A2 -> Rook(White()),
+      Position.C4 -> Bishop(Black()),
+      Position.B4 -> Rook(Black()),
+      Position.A4 -> Rook(Black())
+    ))
+
+    val availablePositions = StandardVariantRules.availableMoves(board, Rook(White()), Position.A2, history).map(_._3).toSet
+
+    assert(availablePositions === Set(
+      Position.A3,
+      Position.A4
+    ))
+  }
+
   // @todo test cases for each type of figures
   // - pawn
   //  - en passant
   //  - promotion
   // - castles
-  // - king
-  // - checkmate
-  // - check
-  // - stalemate
 }
