@@ -160,7 +160,6 @@ object StandardVariantRules {
       yield PossibleMove(from, to, selectedPiece, capturesPiece, capturesAt)
   }
 
-
   private def kingUnsafePossibleMovesByKnight(board: Board, selectedPiece: Piece, from: Position): List[PossibleMove] = {
     val possiblePositions = List(
       from.up().flatMap(_.upRight()),
@@ -192,7 +191,7 @@ object StandardVariantRules {
   private def kingUnsafePossibleMovesByKing(board: Board, selectedPiece: Piece, from: Position): List[PossibleMove] = {
     val allMoves = for (kingDirection <- KingDirections; to <- from + kingDirection) yield to
 
-    // @todo castling
+    // @todo implement castling
 
     allMoves
       .filter(to => board.at(to).isEmpty || board.at(to).get.color != selectedPiece.color)
