@@ -75,11 +75,40 @@ class StandardVariantRulesSpec extends FlatSpec {
     assert(result === CheckResult(Knight(White()), None))
   }
 
+  "White Bishop on C1 (standard board)" should "not have available moves" in {
+    val Failure(exception) = StandardVariantRules.checkMove(standardBoard, Position.C1, Position.C2, history)
+
+    assert(exception.getMessage === "Invalid move!")
+  }
+
+  "White Bishop on F1" should "have E2 as available diagonal move" in {
+    val Success(updatedBoard) = standardBoard.move(Position.E2, Position.E4)
+
+    val Success(result) = StandardVariantRules.checkMove(updatedBoard, Position.F1, Position.E2, history)
+
+    assert(result === CheckResult(Bishop(White()), None))
+  }
+
+  "White Bishop on F1" should "have D3 as available diagonal move" in {
+    val Success(updatedBoard) = standardBoard.move(Position.E2, Position.E4)
+
+    val Success(result) = StandardVariantRules.checkMove(updatedBoard, Position.F1, Position.D3, history)
+
+    assert(result === CheckResult(Bishop(White()), None))
+  }
+
+  "White Bishop on F1" should "have C4 as available diagonal move" in {
+    val Success(updatedBoard) = standardBoard.move(Position.E2, Position.E4)
+
+    val Success(result) = StandardVariantRules.checkMove(updatedBoard, Position.F1, Position.C4, history)
+
+    assert(result === CheckResult(Bishop(White()), None))
+  }
+
   // @todo test cases for each type of figures
   // - pawn
   //  - en passant
   //  - promotion
-  // - bishop
   // - castles
   // - checkmate
   // - check
