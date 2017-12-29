@@ -49,8 +49,7 @@ object GameView {
           // could be loaded from database or initialized from scratch
           val game = Game.standard(Player(whitePlayerName), Player(blackPlayerName))
 
-          val random = Random
-          val machinePlayer = if (random.nextInt() % 2 == 0) whitePlayer else blackPlayer
+          val machinePlayer = blackPlayer
 
           GameLoop.loop(game, GameLoop.configureMachineMove(game, machinePlayer))
 
