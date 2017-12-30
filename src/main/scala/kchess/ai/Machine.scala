@@ -84,10 +84,8 @@ object Machine {
 
   // https://medium.freecodecamp.org/simple-chess-ai-step-by-step-1d55a9266977
 
-  // @todo alpha-beta pruning
-  // @todo evaluation table/position
-  // @todo how to evaluate promotion, stalemate
-  // @todo add cache?
+  // @todo how to evaluate promotion, stalemate, castling
+  // @todo add cache for known positions?!
 
   def move(game: Game, machinePlayer: Player): (Position, Position) = {
     val machineColor = game.colorOf(machinePlayer)
@@ -99,23 +97,45 @@ object Machine {
     val valuedMoves =
       for ((_, from, to, _) <- StandardVariantRules.availableMoves(game.board, color, game.history).par)
         // @todo how to solve .get case?
-        yield game.applyMove(from, to).map(updatedGame => ((from, to), minimax(updatedGame, color.opposite, !maximize, depth - 1))).get
+        yield game.applyMove(from, to).map(updatedGame => ((from, to), minimax(updatedGame, color.opposite, !maximize, depth - 1, Double.NegativeInfinity, Double.PositiveInfinity))).get
 
     val ((bestFrom, bestTo), _) = valuedMoves.maxBy(_._2)
 
     (bestFrom, bestTo)
   }
 
-  private def minimax(game: Game, color: Color, maximize: Boolean, depth: Int): Double = {
-    if (depth == 0 || StandardVariantRules.availableMoves(game.board, color, game.history).isEmpty) -gameValue(game, color)
-    else {
-      val values =
-        for ((_, from, to, _) <- StandardVariantRules.availableMoves(game.board, color, game.history))
-          // @todo how to solve .get case?
-          yield game.applyMove(from, to).map(minimax(_, color.opposite, !maximize, depth - 1)).get
+  /** Minimax algorithm with alpha-beta pruning (imperative version) */
+  // @todo refactor to functional version
+  private def minimax(game: Game, color: Color, maximize: Boolean, depth: Int, alpha: Double, beta: Double): Double = {
+    val availableMoves = if (depth == 0) List() else StandardVariantRules.availableMoves(game.board, color, game.history)
 
-      if (maximize) values.max
-      else values.min
+    if (availableMoves.isEmpty) -gameValue(game, color)
+    else {
+      if (maximize) {
+        var best = Double.NegativeInfinity
+        var newAlpha = alpha
+        for ((_, from, to, _) <- availableMoves) {
+          best = best.max(game.applyMove(from, to).map(minimax(_, color.opposite, !maximize, depth - 1, newAlpha, beta)).get)
+          newAlpha = best.max(newAlpha)
+          if (beta <= newAlpha) {
+            return best
+          }
+        }
+
+        best
+      } else {
+        var best = Double.PositiveInfinity
+        var newBeta = beta
+        for ((_, from, to, _) <- availableMoves) {
+          best = best.min(game.applyMove(from, to).map(minimax(_, color.opposite, !maximize, depth - 1, alpha, newBeta)).get)
+          newBeta = best.min(newBeta)
+          if (newBeta <= alpha) {
+            return best
+          }
+        }
+
+        best
+      }
     }
   }
 
