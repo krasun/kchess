@@ -85,7 +85,7 @@ object Machine {
   // https://medium.freecodecamp.org/simple-chess-ai-step-by-step-1d55a9266977
 
   // @todo how to evaluate promotion, stalemate, castling
-  // @todo add cache for known positions?!
+  // @todo add cache for known positions to avoid recalculation during one party?!
 
   def move(game: Game, machinePlayer: Player): (Position, Position) = {
     val machineColor = game.colorOf(machinePlayer)
@@ -105,13 +105,14 @@ object Machine {
   }
 
   /** Minimax algorithm with alpha-beta pruning (imperative version) */
-  // @todo refactor to functional version
   private def minimax(game: Game, color: Color, maximize: Boolean, depth: Int, alpha: Double, beta: Double): Double = {
     val availableMoves = if (depth == 0) List() else StandardVariantRules.availableMoves(game.board, color, game.history)
 
     if (availableMoves.isEmpty) -gameValue(game, color)
     else {
       if (maximize) {
+        // @todo refactor to functional version
+
         var best = Double.NegativeInfinity
         var newAlpha = alpha
         for ((_, from, to, _) <- availableMoves) {

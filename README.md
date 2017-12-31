@@ -2,6 +2,7 @@ kchess
 ======
 
 [![Build Status](https://travis-ci.org/krasun/kchess.svg?branch=master)](https://travis-ci.org/krasun/kchess)
+[![Coverage Status](https://coveralls.io/repos/github/krasun/kchess/badge.svg?branch=master)](https://coveralls.io/github/krasun/kchess?branch=master)
 
 Chess written in functional way using [Scala](https://www.scala-lang.org/) language.
 
